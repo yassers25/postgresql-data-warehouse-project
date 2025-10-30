@@ -215,9 +215,16 @@ Navigate to `scripts/init_database.sql` to create:
 - Column definitions for ERP and CRM data
 
 **Data Loading**: Review `scripts/bronze/proc_load_bronze.sql` for:
-- Stored procedure to load CSV files into bronze tables
-- COPY commands for each source file
-- Error handling and logging
+- Stored procedure `load_bronze()` that automates CSV file loading
+- PostgreSQL COPY statements for bulk data import from each CSV file:
+  - `cust_info.csv` → `bronze.crm_cust_info`
+  - `prd_info.csv` → `bronze.crm_prd_info`
+  - `sales_details.csv` → `bronze.crm_sales_details`
+  - `CUST_AZ12.csv` → `bronze.erp_cust_az12`
+  - `LOC_A101.csv` → `bronze.erp_loc_a101`
+  - `PX_CAT_G1V2.csv` → `bronze.erp_px_cat_g1v2`
+- Truncate operations before each load
+- Error handling and execution time logging
 
 #### 3. Silver Layer Setup
 **Table Creation**: Check `scripts/silver/ddl_silver.sql` for:
@@ -225,14 +232,17 @@ Navigate to `scripts/init_database.sql` to create:
 - Additional columns for data quality
 
 **Data Transformation**: Review `scripts/silver/proc_load_silver.sql` for:
-- Data cleansing logic
-- Standardization rules
-- Transformation procedures
+- Stored procedure `load_silver()` with comprehensive data transformations
+- Data cleansing logic (removing spaces, standardizing values)
+- Business rules implementation
+- Handling missing and invalid data
+- Deduplication strategies
 
 #### 4. Gold Layer Setup
 **View Creation**: Check `scripts/gold/ddl_gold.sql` for:
-- Star schema view definitions
-- Dimension and fact table structures
+- Star schema view definitions (`dim_customers`, `dim_products`, `fact_sales`)
+- Dimension and fact table structures with surrogate keys
+- JOIN operations integrating CRM and ERP data
 - Business logic implementation
 
 ### Running the ETL Pipeline
@@ -245,11 +255,14 @@ CALL bronze.load_bronze();
 -- Step 2: Transform and load into Silver layer
 CALL silver.load_silver();
 
--- Step 3: Query Gold layer (views automatically populated)
+-- Step 3: Gold layer views are automatically available after Bronze and Silver loads
+-- Query the dimensional model
 SELECT * FROM gold.dim_customers LIMIT 10;
 SELECT * FROM gold.dim_products LIMIT 10;
 SELECT * FROM gold.fact_sales LIMIT 10;
 ```
+
+**Note**: Gold layer uses views (created by `ddl_gold.sql`), so data is automatically available once Bronze and Silver layers are populated.
 
 ### Data Quality Validation
 
@@ -409,3 +422,7 @@ This is a portfolio project, but suggestions and feedback are welcome! Feel free
 ## 🛡️ License
 
 This project is licensed under the [MIT License](LICENSE). You are free to use, modify, and distribute this project with proper attribution.
+
+---
+
+**⭐ If you find this project helpful, please consider giving it a star!**
