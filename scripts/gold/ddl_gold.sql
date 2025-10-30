@@ -1,5 +1,5 @@
 -- =============================================================
--- Create Gold Views (PostgreSQL Version)
+-- Create Gold Views
 -- =============================================================
 -- This script creates views in the 'gold' schema.
 -- The Gold layer represents dimension and fact tables (Star Schema)
